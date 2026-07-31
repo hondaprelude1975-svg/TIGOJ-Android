@@ -1,0 +1,18 @@
+CÓMO CREAR EL APK SIN TERMUX
+============================
+
+1. Entra en GitHub desde el navegador.
+2. Crea un repositorio nuevo llamado: TIGOJ-AI-Pro
+3. Descomprime este ZIP.
+4. Sube todas las carpetas y archivos al repositorio, incluida la carpeta .github
+5. Abre la pestaña Actions.
+6. Abre "Crear APK de TIGOJ".
+7. Pulsa "Run workflow".
+8. Cuando termine en verde, abre la ejecución.
+9. En Artifacts descarga "TIGOJ-AI-Pro-APK".
+10. Descomprime el archivo descargado e instala app-debug.apk.
+
+Antes de abrir TIGOJ:
+- Abre LLM AI Server.
+- Carga tu modelo.
+- Inicia el servidor local en el puerto 11434.
