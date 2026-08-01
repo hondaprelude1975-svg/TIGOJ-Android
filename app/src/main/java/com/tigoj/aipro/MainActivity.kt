@@ -59,7 +59,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun askLocalModel(userText: String) {
-        val pregunta = userText.trim().lowercase()
+        val original = userText.trim()
+val pregunta = original.lowercase()
+
+val regex = Regex("me llamo\s+(.+)", RegexOption.IGNORE_CASE)
+val m = regex.find(original)
+if (m != null) {
+    val nombre = m.groupValues[1].trim()
+    getSharedPreferences("tigoj_memory", MODE_PRIVATE)
+        .edit()
+        .putString("nombre_usuario", nombre)
+        .apply()
+    binding.chat.append("\nTIGOJ: Encantado, $nombre. Lo recordaré.\n")
+    return
+}
+
+val nombreGuardado = getSharedPreferences("tigoj_memory", MODE_PRIVATE)
+    .getString("nombre_usuario", "Jesús") ?: "Jesús"
+
 
         if (
             pregunta == "quién eres" ||
@@ -81,7 +98,7 @@ class MainActivity : AppCompatActivity() {
             pregunta == "cuál es mi nombre" ||
             pregunta == "cual es mi nombre"
         ) {
-            binding.chat.append("\nTIGOJ: Te llamas Jesús.\n")
+            binding.chat.append("\nTIGOJ: Te llamas $nombreGuardado.\n")
             return
         }
 
