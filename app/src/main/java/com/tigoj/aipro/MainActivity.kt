@@ -67,6 +67,7 @@ class MainActivity : AppCompatActivity() {
                 try {
                     val body = JSONObject().apply {
                         put("model", "default")
+                        put("stream", false)
                         put("temperature", 0.7)
                         put("max_tokens", 500)
                         put("messages", JSONArray().apply {
