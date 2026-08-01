@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity() {
             val result = withContext(Dispatchers.IO) {
                 try {
                     val body = JSONObject().apply {
-                        put("model", "local-model")
+                        put("model", "default")
                         put("temperature", 0.7)
                         put("max_tokens", 500)
                         put("messages", JSONArray().apply {
