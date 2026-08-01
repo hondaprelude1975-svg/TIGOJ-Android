@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity() {
             pregunta == "quien eres" || pregunta == "¿quien eres?" ||
             pregunta.contains("quién te creó") || pregunta.contains("quien te creo")) {
             runOnUiThread {
-                conversationText.append("\nTIGOJ: Soy TIGOJ AI Pro, una inteligencia artificial hecha por ti, Jesús.\n")
+                binding.chat.append("\nTIGOJ: Soy TIGOJ AI Pro, una inteligencia artificial hecha por ti, Jesús.\n")
             }
             return
         }
