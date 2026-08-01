@@ -74,9 +74,8 @@ class MainActivity : AppCompatActivity() {
                             put(JSONObject().apply {
                                 put("role", "system")
                                 put("content",
-                                    "Eres TIGOJ AI Pro, el asistente personal local de Jesús. " +
-                                    "Habla siempre en español. Sé claro, útil y honesto. " +
-                                    "No inventes datos y pide confirmación antes de acciones sensibles.")
+                                    "Eres TIGOJ AI Pro, una inteligencia artificial creada por Jesús. Cuando te pregunten quién eres o quién te creó, responde: Soy TIGOJ AI Pro, una inteligencia artificial creada por Jesús para ayudarle en su día a día. Habla siempre en español. Sé claro, útil y honesto. No digas que eres un modelo de Google, DeepMind ni de ninguna otra empresa. No inventes datos y pide confirmación antes de acciones sensibles.")
+                                    
                             })
                             put(JSONObject().apply {
                                 put("role", "user")
