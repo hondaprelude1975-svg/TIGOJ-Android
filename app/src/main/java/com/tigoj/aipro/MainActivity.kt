@@ -60,14 +60,31 @@ class MainActivity : AppCompatActivity() {
 
     private fun askLocalModel(userText: String) {
         val pregunta = userText.trim().lowercase()
-        if (pregunta == "quién eres" || pregunta == "¿quién eres?" ||
-            pregunta == "quien eres" || pregunta == "¿quien eres?" ||
-            pregunta.contains("quién te creó") || pregunta.contains("quien te creo")) {
-            runOnUiThread {
-                binding.chat.append("\nTIGOJ: Soy TIGOJ AI Pro, una inteligencia artificial hecha por ti, Jesús.\n")
-            }
+
+        if (
+            pregunta == "quién eres" ||
+            pregunta == "¿quién eres?" ||
+            pregunta == "quien eres" ||
+            pregunta == "¿quien eres?" ||
+            pregunta.contains("quién te creó") ||
+            pregunta.contains("quien te creo")
+        ) {
+            binding.chat.append("\nTIGOJ: Soy TIGOJ AI Pro, una inteligencia artificial hecha por ti, Jesús.\n")
             return
         }
+
+        if (
+            pregunta == "¿cómo me llamo?" ||
+            pregunta == "cómo me llamo" ||
+            pregunta == "como me llamo" ||
+            pregunta == "¿como me llamo?" ||
+            pregunta == "cuál es mi nombre" ||
+            pregunta == "cual es mi nombre"
+        ) {
+            binding.chat.append("\nTIGOJ: Te llamas Jesús.\n")
+            return
+        }
+
         binding.send.isEnabled = false
         binding.status.text = "TIGOJ está pensando…"
 
