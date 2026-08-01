@@ -62,7 +62,7 @@ class MainActivity : AppCompatActivity() {
         val original = userText.trim()
 val pregunta = original.lowercase()
 
-val regex = Regex("me llamo\s+(.+)", RegexOption.IGNORE_CASE)
+val regex = Regex("me llamo\\s+(.+)", RegexOption.IGNORE_CASE)
 val m = regex.find(original)
 if (m != null) {
     val nombre = m.groupValues[1].trim()
