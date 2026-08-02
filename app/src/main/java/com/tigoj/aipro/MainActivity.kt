@@ -252,15 +252,22 @@ val nombreGuardado = getSharedPreferences("tigoj_memory", MODE_PRIVATE)
     }
 
     private fun hablar(texto: String) {
+        val textoNatural = texto
+            .replace(". ", ".  ")
+            .replace(", ", ",  ")
+            .replace(": ", ":  ")
+            .replace("; ", ";  ")
+            .trim()
+
         if (ttsPreparado) {
             tts.speak(
-                texto,
+                textoNatural,
                 TextToSpeech.QUEUE_FLUSH,
                 null,
                 "tigoj_respuesta"
             )
         } else {
-            textoPendiente = texto
+            textoPendiente = textoNatural
         }
     }
 
