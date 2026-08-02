@@ -226,6 +226,41 @@ val nombreGuardado = getSharedPreferences("tigoj_memory", MODE_PRIVATE)
     .getString("nombre_usuario", "Jesús") ?: "Jesús"
 
 
+        val ordenBusqueda =
+            pregunta.startsWith("busca ") ||
+            pregunta.startsWith("búscame ") ||
+            pregunta.startsWith("busca en internet ") ||
+            pregunta.startsWith("buscar ")
+
+        if (ordenBusqueda) {
+            val consulta = original
+                .replace(
+                    Regex(
+                        "^(busca en internet|búscame|busca|buscar)\\s+",
+                        RegexOption.IGNORE_CASE
+                    ),
+                    ""
+                )
+                .trim()
+
+            if (consulta.isNotEmpty()) {
+                val url = "https://www.google.com/search?q=" +
+                    java.net.URLEncoder.encode(consulta, "UTF-8")
+
+                val intent = android.content.Intent(
+                    android.content.Intent.ACTION_VIEW,
+                    android.net.Uri.parse(url)
+                )
+
+                startActivity(intent)
+                appendChat(
+                    "TIGOJ: Abriendo una búsqueda en Internet sobre: $consulta\n\n"
+                )
+                return
+            }
+        }
+
+
         if (
             pregunta == "quién eres" ||
             pregunta == "¿quién eres?" ||
