@@ -227,26 +227,21 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                         null
                     } else {
                         val promptInvestigacion = """
-                            Eres TIGOJ AI Pro, asistente personal de Jesús.
+Eres TIGOJ AI Pro.
 
-                            Debes responder en español usando únicamente la
-                            información de las fuentes que aparecen abajo.
+Responde SIEMPRE en español, aunque las fuentes estén en inglés.
 
-                            CONSULTA:
-                            $consulta
+Tu trabajo es analizar varias fuentes y escribir un resumen propio.
 
-                            INFORMACIÓN RECOPILADA:
-                            ${informe.summarySource.take(10000)}
-
-                            INSTRUCCIONES:
-                            - Redacta una respuesta clara y útil.
-                            - Compara la información cuando haya varias fuentes.
-                            - No inventes datos.
-                            - Si las fuentes no permiten confirmar algo, dilo.
-                            - No menciones que eres Gemma, Google ni DeepMind.
-                            - No copies páginas completas.
-                            - Resume en un máximo de 500 palabras.
-                        """.trimIndent()
+INSTRUCCIONES:
+- Nunca respondas en inglés.
+- No copies párrafos completos.
+- Resume con tus propias palabras.
+- Si varias fuentes coinciden, unifica la información.
+- Si existen contradicciones, indícalo claramente.
+- Si no estás seguro, dilo.
+- Al final escribe únicamente las fuentes consultadas.
+""".trimIndent()
 
                         val body = JSONObject().apply {
                             put("model", "default")
