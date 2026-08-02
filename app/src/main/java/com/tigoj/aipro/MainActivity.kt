@@ -19,6 +19,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.tigoj.aipro.databinding.ActivityMainBinding
+import com.tigoj.aipro.search.WebSearch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -211,98 +212,34 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         binding.status.text = "● Buscando en Internet…"
 
         lifecycleScope.launch {
-            val resultado = withContext(Dispatchers.IO) {
+            val resultados = withContext(Dispatchers.IO) {
                 try {
-                    val consultaCodificada =
-                        java.net.URLEncoder.encode(consulta, "UTF-8")
-
-                    val urlBusqueda =
-                        "https://es.wikipedia.org/w/api.php" +
-                        "?action=query&list=search&format=json&utf8=1&srlimit=1" +
-                        "&srsearch=$consultaCodificada"
-
-                    val conexionBusqueda =
-                        URL(urlBusqueda).openConnection() as HttpURLConnection
-
-                    conexionBusqueda.requestMethod = "GET"
-                    conexionBusqueda.connectTimeout = 10000
-                    conexionBusqueda.readTimeout = 15000
-                    conexionBusqueda.setRequestProperty(
-                        "User-Agent",
-                        "TIGOJ-AI-Pro/1.0"
-                    )
-
-                    val textoBusqueda = conexionBusqueda.inputStream
-                        .bufferedReader()
-                        .use { it.readText() }
-
-                    val resultados = JSONObject(textoBusqueda)
-                        .getJSONObject("query")
-                        .getJSONArray("search")
-
-                    if (resultados.length() == 0) {
-                        null
-                    } else {
-                        val titulo = resultados
-                            .getJSONObject(0)
-                            .getString("title")
-
-                        val tituloCodificado =
-                            java.net.URLEncoder.encode(titulo, "UTF-8")
-
-                        val urlResumen =
-                            "https://es.wikipedia.org/w/api.php" +
-                            "?action=query&prop=extracts&format=json&utf8=1" +
-                            "&exintro=1&explaintext=1&redirects=1" +
-                            "&titles=$tituloCodificado"
-
-                        val conexionResumen =
-                            URL(urlResumen).openConnection() as HttpURLConnection
-
-                        conexionResumen.requestMethod = "GET"
-                        conexionResumen.connectTimeout = 10000
-                        conexionResumen.readTimeout = 15000
-                        conexionResumen.setRequestProperty(
-                            "User-Agent",
-                            "TIGOJ-AI-Pro/1.0"
-                        )
-
-                        val textoResumen = conexionResumen.inputStream
-                            .bufferedReader()
-                            .use { it.readText() }
-
-                        val paginas = JSONObject(textoResumen)
-                            .getJSONObject("query")
-                            .getJSONObject("pages")
-
-                        val clavePagina = paginas.keys().next()
-                        val pagina = paginas.getJSONObject(clavePagina)
-                        val resumen = pagina.optString("extract").trim()
-
-                        if (resumen.isBlank()) {
-                            null
-                        } else {
-                            val resumenCorto =
-                                if (resumen.length > 1200) {
-                                    resumen.take(1200) + "…"
-                                } else {
-                                    resumen
-                                }
-
-                            "$titulo. $resumenCorto"
-                        }
-                    }
+                    WebSearch.search(consulta, limit = 5)
                 } catch (e: Exception) {
-                    null
+                    emptyList()
                 }
             }
 
-            if (resultado != null) {
-                appendChat("TIGOJ: $resultado\n\n")
-                binding.status.text = "● Información encontrada"
+            if (resultados.isNotEmpty()) {
+                val textoResultados = resultados
+                    .take(5)
+                    .mapIndexed { index, resultado ->
+                        "${index + 1}. ${resultado.title}\n" +
+                        "${resultado.snippet}\n" +
+                        "${resultado.url}"
+                    }
+                    .joinToString("\n\n")
+
+                appendChat(
+                    "TIGOJ: He encontrado estos resultados sobre $consulta:\n\n" +
+                    textoResultados +
+                    "\n\n"
+                )
+
+                binding.status.text = "● Resultados encontrados"
             } else {
                 binding.status.text =
-                    "● No encontré una respuesta clara. Abriendo Google…"
+                    "● No encontré resultados. Abriendo Google…"
 
                 val urlGoogle =
                     "https://www.google.com/search?q=" +
