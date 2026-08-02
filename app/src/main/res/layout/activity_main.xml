@@ -34,7 +34,7 @@
         android:layout_height="0dp"
         android:fillViewport="true"
         app:layout_constraintTop_toBottomOf="@id/status"
-        app:layout_constraintBottom_toTopOf="@id/composer"
+        app:layout_constraintBottom_toTopOf="@id/autoSend"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -47,7 +47,20 @@
             android:lineSpacingExtra="5dp" />
     </ScrollView>
 
-    <LinearLayout
+    
+    <Switch
+        android:id="@+id/autoSend"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Auto enviar voz"
+        android:checked="false"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        app:layout_constraintBottom_toTopOf="@id/composer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+<LinearLayout
         android:id="@+id/composer"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
