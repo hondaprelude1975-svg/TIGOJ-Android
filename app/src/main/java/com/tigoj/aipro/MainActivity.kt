@@ -231,6 +231,8 @@ val nombreGuardado = getSharedPreferences("tigoj_memory", MODE_PRIVATE)
             tts.setSpeechRate(0.92f)
             tts.setPitch(0.95f)
 
+            listarVocesDisponibles()
+
             ttsPreparado =
                 resultadoIdioma != TextToSpeech.LANG_MISSING_DATA &&
                 resultadoIdioma != TextToSpeech.LANG_NOT_SUPPORTED
@@ -268,6 +270,20 @@ val nombreGuardado = getSharedPreferences("tigoj_memory", MODE_PRIVATE)
             tts.shutdown()
         }
         super.onDestroy()
+    }
+
+    private fun listarVocesDisponibles() {
+        val voces = tts.voices
+            ?.filter { it.locale.language == "es" }
+            ?.sortedBy { it.name }
+            ?: emptyList()
+
+        android.util.Log.d(
+            "TIGOJ_VOCES",
+            voces.joinToString("\n") { voz ->
+                "nombre=${voz.name} | locale=${voz.locale} | calidad=${voz.quality} | red=${voz.isNetworkConnectionRequired}"
+            }
+        )
     }
 
 }
