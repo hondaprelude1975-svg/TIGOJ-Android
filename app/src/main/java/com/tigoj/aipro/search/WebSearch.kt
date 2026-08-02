@@ -2,6 +2,7 @@ package com.tigoj.aipro.search
 
 import org.jsoup.Jsoup
 import java.net.URLEncoder
+import java.net.URLDecoder
 
 data class WebResult(
     val title: String,
@@ -23,15 +24,30 @@ object WebSearch {
             .timeout(15_000)
             .get()
 
-        return document
+        val resultados = document
             .select(".result")
             .mapNotNull { element ->
                 val link = element.selectFirst(".result__a")
                     ?: return@mapNotNull null
 
                 val title = link.text().trim()
-                val url = link.absUrl("href").ifBlank {
+                val href = link.absUrl("href").ifBlank {
                     link.attr("href").trim()
+                }
+
+                val url = try {
+                    val parametro = Regex("[?&]uddg=([^&]+)")
+                        .find(href)
+                        ?.groupValues
+                        ?.getOrNull(1)
+
+                    if (parametro != null) {
+                        URLDecoder.decode(parametro, "UTF-8")
+                    } else {
+                        href
+                    }
+                } catch (_: Exception) {
+                    href
                 }
 
                 val snippet = element
@@ -50,21 +66,31 @@ object WebSearch {
                     )
                 }
             }
-            .filter {
-                val u = it.url.lowercase()
 
-                u.contains("wikipedia.org") ||
-                u.contains("atptour.com") ||
-                u.contains("wtatennis.com") ||
-                u.contains("itftennis.com") ||
-                u.contains("reuters.com") ||
-                u.contains("bbc.com") ||
-                u.contains("elpais.com") ||
-                u.contains(".gov") ||
-                u.contains(".edu") ||
-                u.contains(".org")
-            }
-            .take(limit)
+        val fuentesFiables = resultados.filter {
+            val u = it.url.lowercase()
+
+            u.contains("seg-social.es") ||
+            u.contains("administracion.gob.es") ||
+            u.contains("boe.es") ||
+            u.contains("europa.eu") ||
+            u.contains("wikipedia.org") ||
+            u.contains("atptour.com") ||
+            u.contains("wtatennis.com") ||
+            u.contains("itftennis.com") ||
+            u.contains("reuters.com") ||
+            u.contains("bbc.com") ||
+            u.contains("elpais.com") ||
+            u.contains(".gov") ||
+            u.contains(".gob.") ||
+            u.contains(".edu")
+        }
+
+        return if (fuentesFiables.isNotEmpty()) {
+            fuentesFiables.take(limit)
+        } else {
+            resultados.take(limit)
+        }
     }
 
     fun readPage(url: String, maxCharacters: Int = 5_000): String {
