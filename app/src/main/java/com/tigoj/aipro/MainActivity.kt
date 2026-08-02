@@ -136,9 +136,10 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 val texto = textos?.firstOrNull()?.trim().orEmpty()
 
                 if (texto.isNotEmpty()) {
-                    binding.input.setText(texto)
-                    binding.input.setSelection(texto.length)
-                    binding.status.text = "● Voz reconocida"
+                    binding.input.setText("")
+                    binding.status.text = "● Enviando voz…"
+                    appendChat("Jesús: $texto\n\n")
+                    askLocalModel(texto)
                 } else {
                     binding.status.text = "● No se reconoció ninguna frase"
                 }
