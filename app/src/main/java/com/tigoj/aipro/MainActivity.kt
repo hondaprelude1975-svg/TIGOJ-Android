@@ -206,6 +206,120 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         }
     }
 
+    private fun buscarInternetGratis(consulta: String) {
+        binding.send.isEnabled = false
+        binding.status.text = "● Buscando en Internet…"
+
+        lifecycleScope.launch {
+            val resultado = withContext(Dispatchers.IO) {
+                try {
+                    val consultaCodificada =
+                        java.net.URLEncoder.encode(consulta, "UTF-8")
+
+                    val urlBusqueda =
+                        "https://es.wikipedia.org/w/api.php" +
+                        "?action=query&list=search&format=json&utf8=1&srlimit=1" +
+                        "&srsearch=$consultaCodificada"
+
+                    val conexionBusqueda =
+                        URL(urlBusqueda).openConnection() as HttpURLConnection
+
+                    conexionBusqueda.requestMethod = "GET"
+                    conexionBusqueda.connectTimeout = 10000
+                    conexionBusqueda.readTimeout = 15000
+                    conexionBusqueda.setRequestProperty(
+                        "User-Agent",
+                        "TIGOJ-AI-Pro/1.0"
+                    )
+
+                    val textoBusqueda = conexionBusqueda.inputStream
+                        .bufferedReader()
+                        .use { it.readText() }
+
+                    val resultados = JSONObject(textoBusqueda)
+                        .getJSONObject("query")
+                        .getJSONArray("search")
+
+                    if (resultados.length() == 0) {
+                        null
+                    } else {
+                        val titulo = resultados
+                            .getJSONObject(0)
+                            .getString("title")
+
+                        val tituloCodificado =
+                            java.net.URLEncoder.encode(titulo, "UTF-8")
+
+                        val urlResumen =
+                            "https://es.wikipedia.org/w/api.php" +
+                            "?action=query&prop=extracts&format=json&utf8=1" +
+                            "&exintro=1&explaintext=1&redirects=1" +
+                            "&titles=$tituloCodificado"
+
+                        val conexionResumen =
+                            URL(urlResumen).openConnection() as HttpURLConnection
+
+                        conexionResumen.requestMethod = "GET"
+                        conexionResumen.connectTimeout = 10000
+                        conexionResumen.readTimeout = 15000
+                        conexionResumen.setRequestProperty(
+                            "User-Agent",
+                            "TIGOJ-AI-Pro/1.0"
+                        )
+
+                        val textoResumen = conexionResumen.inputStream
+                            .bufferedReader()
+                            .use { it.readText() }
+
+                        val paginas = JSONObject(textoResumen)
+                            .getJSONObject("query")
+                            .getJSONObject("pages")
+
+                        val clavePagina = paginas.keys().next()
+                        val pagina = paginas.getJSONObject(clavePagina)
+                        val resumen = pagina.optString("extract").trim()
+
+                        if (resumen.isBlank()) {
+                            null
+                        } else {
+                            val resumenCorto =
+                                if (resumen.length > 1200) {
+                                    resumen.take(1200) + "…"
+                                } else {
+                                    resumen
+                                }
+
+                            "$titulo. $resumenCorto"
+                        }
+                    }
+                } catch (e: Exception) {
+                    null
+                }
+            }
+
+            if (resultado != null) {
+                appendChat("TIGOJ: $resultado\n\n")
+                binding.status.text = "● Información encontrada"
+            } else {
+                binding.status.text =
+                    "● No encontré una respuesta clara. Abriendo Google…"
+
+                val urlGoogle =
+                    "https://www.google.com/search?q=" +
+                    java.net.URLEncoder.encode(consulta, "UTF-8")
+
+                startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        android.net.Uri.parse(urlGoogle)
+                    )
+                )
+            }
+
+            binding.send.isEnabled = true
+        }
+    }
+
     private fun askLocalModel(userText: String) {
         val original = userText.trim()
 val pregunta = original.lowercase()
@@ -244,22 +358,10 @@ val nombreGuardado = getSharedPreferences("tigoj_memory", MODE_PRIVATE)
                 .trim()
 
             if (consulta.isNotEmpty()) {
-                val url = "https://www.google.com/search?q=" +
-                    java.net.URLEncoder.encode(consulta, "UTF-8")
-
-                val intent = android.content.Intent(
-                    android.content.Intent.ACTION_VIEW,
-                    android.net.Uri.parse(url)
-                )
-
-                startActivity(intent)
-                appendChat(
-                    "TIGOJ: Abriendo una búsqueda en Internet sobre: $consulta\n\n"
-                )
+                buscarInternetGratis(consulta)
                 return
             }
         }
-
 
         if (
             pregunta == "quién eres" ||
