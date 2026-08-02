@@ -1,6 +1,8 @@
 package com.tigoj.aipro
 
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
+import java.util.Locale
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.tigoj.aipro.databinding.ActivityMainBinding
@@ -12,7 +14,8 @@ import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
+    private lateinit var tts: TextToSpeech
     private lateinit var binding: ActivityMainBinding
     private val apiBase = "http://127.0.0.1:11434"
     private val memory by lazy { getSharedPreferences("tigoj_memory", MODE_PRIVATE) }
@@ -21,6 +24,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        tts = TextToSpeech(this, this)
 
         memory.getString("chat", null)?.takeIf { it.isNotBlank() }?.let {
             binding.chat.text = it
@@ -161,7 +165,30 @@ val nombreGuardado = getSharedPreferences("tigoj_memory", MODE_PRIVATE)
 
     private fun appendChat(text: String) {
         binding.chat.append(text)
+        hablar(text.removePrefix("\\nTIGOJ: ").trim())
         memory.edit().putString("chat", binding.chat.text.toString()).apply()
         binding.scroll.post { binding.scroll.fullScroll(android.view.View.FOCUS_DOWN) }
     }
+    override fun onInit(status: Int) {
+        if (status == TextToSpeech.SUCCESS) {
+            tts.language = Locale("es", "ES")
+            tts.setSpeechRate(0.95f)
+            tts.setPitch(1.05f)
+        }
+    }
+
+    private fun hablar(texto: String) {
+        if (::tts.isInitialized) {
+            tts.speak(texto, TextToSpeech.QUEUE_FLUSH, null, "tigoj_respuesta")
+        }
+    }
+
+    override fun onDestroy() {
+        if (::tts.isInitialized) {
+            tts.stop()
+            tts.shutdown()
+        }
+        super.onDestroy()
+    }
+
 }
