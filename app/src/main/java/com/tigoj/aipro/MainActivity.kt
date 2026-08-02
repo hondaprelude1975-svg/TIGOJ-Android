@@ -340,27 +340,54 @@ val nombreGuardado = getSharedPreferences("tigoj_memory", MODE_PRIVATE)
     .getString("nombre_usuario", "Jesús") ?: "Jesús"
 
 
-        val ordenBusqueda =
-            pregunta.startsWith("busca ") ||
-            pregunta.startsWith("búscame ") ||
-            pregunta.startsWith("busca en internet ") ||
-            pregunta.startsWith("buscar ")
+        val prefijosBusqueda = listOf(
+            "busca en internet",
+            "busca información sobre",
+            "busca informacion sobre",
+            "búscame información sobre",
+            "buscame informacion sobre",
+            "comprueba en internet",
+            "investiga esto",
+            "investiga",
+            "qué encuentras sobre",
+            "que encuentras sobre",
+            "busca",
+            "búscame",
+            "buscame",
+            "buscar"
+        )
 
-        if (ordenBusqueda) {
+        val prefijoDetectado = prefijosBusqueda.firstOrNull { prefijo ->
+            pregunta == prefijo ||
+            pregunta.startsWith("$prefijo ") ||
+            pregunta.startsWith("$prefijo:")
+        }
+
+        if (prefijoDetectado != null) {
             val consulta = original
-                .replace(
-                    Regex(
-                        "^(busca en internet|búscame|busca|buscar)\\s+",
-                        RegexOption.IGNORE_CASE
-                    ),
-                    ""
-                )
+                .drop(prefijoDetectado.length)
                 .trim()
+                .trimStart(':', '-', ' ')
 
             if (consulta.isNotEmpty()) {
                 buscarInternetGratis(consulta)
                 return
+            } else {
+                appendChat(
+                    "TIGOJ: Dime qué información quieres que investigue.\n\n"
+                )
+                return
             }
+        }
+
+        val contieneEnlace = Regex(
+            """https?://\S+""",
+            RegexOption.IGNORE_CASE
+        ).containsMatchIn(original)
+
+        if (contieneEnlace) {
+            buscarInternetGratis(original)
+            return
         }
 
         if (
