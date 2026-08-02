@@ -21,6 +21,7 @@ import androidx.lifecycle.lifecycleScope
 import com.tigoj.aipro.databinding.ActivityMainBinding
 import com.tigoj.aipro.search.WebSearch
 import com.tigoj.aipro.agents.ResearchAgent
+import com.tigoj.aipro.memory.ResearchMemory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -209,6 +210,19 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     }
 
     private fun buscarInternetGratis(consulta: String) {
+        val memoriaGuardada = ResearchMemory.load(consulta)
+
+        if (memoriaGuardada != null) {
+            appendChat(
+                "TIGOJ: Ya había investigado esto antes.\n\n" +
+                memoriaGuardada.answer +
+                "\n\n"
+            )
+
+            binding.status.text = "● Respuesta recuperada de memoria"
+            return
+        }
+
         binding.send.isEnabled = false
         binding.status.text = "● Investigando varias fuentes…"
 
@@ -323,6 +337,11 @@ REGLAS OBLIGATORIAS:
             if (resultadoInvestigacion != null) {
                 val resumen = resultadoInvestigacion.first
                 val fuentes = resultadoInvestigacion.second
+
+                ResearchMemory.save(
+                    consulta,
+                    resumen
+                )
 
                 appendChat(
                     "TIGOJ: $resumen\n\n" +
