@@ -69,7 +69,15 @@
             android:inputType="textMultiLine"
             android:imeOptions="actionSend" />
 
-        <Button
+                <ImageButton
+            android:id="@+id/mic"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_btn_speak_now"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Micrófono" />
+
+<Button
             android:id="@+id/send"
             android:layout_width="56dp"
             android:layout_height="wrap_content"

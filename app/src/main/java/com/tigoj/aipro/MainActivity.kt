@@ -1,10 +1,18 @@
 package com.tigoj.aipro
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.speech.RecognitionListener
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
 import android.view.WindowManager
 import android.speech.tts.TextToSpeech
 import java.util.Locale
 import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -23,6 +31,18 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private var ttsPreparado = false
     private var textoPendiente: String? = null
     private lateinit var binding: ActivityMainBinding
+    private var speechRecognizer: SpeechRecognizer? = null
+
+    private val permisoMicrofono = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { concedido ->
+        if (concedido) {
+            iniciarEscucha()
+        } else {
+            binding.status.text = "● Permiso de micrófono denegado"
+        }
+    }
+
     private val apiBase = "http://127.0.0.1:11434"
     private val memory by lazy { getSharedPreferences("tigoj_memory", MODE_PRIVATE) }
 
@@ -55,6 +75,19 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             binding.chat.text = it
         }
 
+        binding.mic.setOnClickListener {
+            val permisoConcedido = ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.RECORD_AUDIO
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (permisoConcedido) {
+                iniciarEscucha()
+            } else {
+                permisoMicrofono.launch(Manifest.permission.RECORD_AUDIO)
+            }
+        }
+
         binding.send.setOnClickListener {
             val text = binding.input.text.toString().trim()
             if (text.isNotEmpty()) {
@@ -65,6 +98,69 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         }
 
         checkServer()
+    }
+
+    private fun iniciarEscucha() {
+        if (!SpeechRecognizer.isRecognitionAvailable(this)) {
+            binding.status.text = "● Reconocimiento de voz no disponible"
+            return
+        }
+
+        speechRecognizer?.destroy()
+        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
+
+        speechRecognizer?.setRecognitionListener(object : RecognitionListener {
+            override fun onReadyForSpeech(params: Bundle?) {
+                binding.status.text = "● Escuchando…"
+            }
+
+            override fun onBeginningOfSpeech() {
+                binding.status.text = "● Te escucho…"
+            }
+
+            override fun onRmsChanged(rmsdB: Float) = Unit
+            override fun onBufferReceived(buffer: ByteArray?) = Unit
+            override fun onEndOfSpeech() {
+                binding.status.text = "● Procesando voz…"
+            }
+
+            override fun onError(error: Int) {
+                binding.status.text = "● No entendí. Pulsa 🎤 e inténtalo otra vez"
+            }
+
+            override fun onResults(results: Bundle?) {
+                val textos = results?.getStringArrayList(
+                    SpeechRecognizer.RESULTS_RECOGNITION
+                )
+
+                val texto = textos?.firstOrNull()?.trim().orEmpty()
+
+                if (texto.isNotEmpty()) {
+                    binding.input.setText(texto)
+                    binding.input.setSelection(texto.length)
+                    binding.status.text = "● Voz reconocida"
+                } else {
+                    binding.status.text = "● No se reconoció ninguna frase"
+                }
+            }
+
+            override fun onPartialResults(partialResults: Bundle?) = Unit
+            override fun onEvent(eventType: Int, params: Bundle?) = Unit
+        })
+
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(
+                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+            )
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "es-ES")
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "es-ES")
+            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3)
+            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false)
+            putExtra(RecognizerIntent.EXTRA_PROMPT, "Habla con TIGOJ")
+        }
+
+        speechRecognizer?.startListening(intent)
     }
 
     private fun checkServer() {
@@ -272,6 +368,9 @@ val nombreGuardado = getSharedPreferences("tigoj_memory", MODE_PRIVATE)
     }
 
     override fun onDestroy() {
+        speechRecognizer?.destroy()
+        speechRecognizer = null
+
         if (::tts.isInitialized) {
             tts.stop()
             tts.shutdown()
