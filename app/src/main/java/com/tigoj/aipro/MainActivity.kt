@@ -1,6 +1,7 @@
 package com.tigoj.aipro
 
 import android.os.Bundle
+import android.view.WindowManager
 import android.speech.tts.TextToSpeech
 import java.util.Locale
 import androidx.appcompat.app.AppCompatActivity
@@ -24,6 +25,10 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        window.setSoftInputMode(
+            WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or
+            WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
+        )
         tts = TextToSpeech(this, this)
 
         memory.getString("chat", null)?.takeIf { it.isNotBlank() }?.let {
