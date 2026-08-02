@@ -34,6 +34,8 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private lateinit var tts: TextToSpeech
     private var ttsPreparado = false
     private var textoPendiente: String? = null
+    private var hablando = false
+    private var ultimaRespuesta = ""
     private var conversacionContinua = false
     private lateinit var binding: ActivityMainBinding
     private var speechRecognizer: SpeechRecognizer? = null
@@ -81,6 +83,13 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         }
 
         binding.mic.setOnClickListener {
+            if (hablando && ::tts.isInitialized) {
+                tts.stop()
+                hablando = false
+                binding.status.text = "● Voz detenida"
+                return@setOnClickListener
+            }
+
             val permisoConcedido = ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.RECORD_AUDIO
@@ -90,6 +99,42 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 iniciarEscucha()
             } else {
                 permisoMicrofono.launch(Manifest.permission.RECORD_AUDIO)
+            }
+        }
+
+        binding.stopVoice.setOnClickListener {
+            if (::tts.isInitialized) {
+                tts.stop()
+            }
+
+            hablando = false
+            binding.status.text = "● Voz detenida"
+        }
+
+        binding.repeatVoice.setOnClickListener {
+            if (ultimaRespuesta.isBlank()) {
+                binding.status.text = "● No hay una respuesta para repetir"
+            } else {
+                hablar(ultimaRespuesta)
+                binding.status.text = "● Repitiendo última respuesta"
+            }
+        }
+
+        binding.copyAnswer.setOnClickListener {
+            if (ultimaRespuesta.isBlank()) {
+                binding.status.text = "● No hay una respuesta para copiar"
+            } else {
+                val portapapeles = getSystemService(
+                    android.content.Context.CLIPBOARD_SERVICE
+                ) as android.content.ClipboardManager
+
+                val clip = android.content.ClipData.newPlainText(
+                    "Respuesta de TIGOJ",
+                    ultimaRespuesta
+                )
+
+                portapapeles.setPrimaryClip(clip)
+                binding.status.text = "● Respuesta copiada"
             }
         }
 
@@ -530,7 +575,11 @@ val nombreGuardado = getSharedPreferences("tigoj_memory", MODE_PRIVATE)
 
         val textoLimpio = text.trim()
         if (textoLimpio.startsWith("TIGOJ:")) {
-            hablar(textoLimpio.removePrefix("TIGOJ:").trim())
+            ultimaRespuesta = textoLimpio
+                .removePrefix("TIGOJ:")
+                .trim()
+
+            hablar(ultimaRespuesta)
         }
 
         memory.edit().putString("chat", binding.chat.text.toString()).apply()
@@ -559,9 +608,13 @@ val nombreGuardado = getSharedPreferences("tigoj_memory", MODE_PRIVATE)
 
             tts.setOnUtteranceProgressListener(
                 object : UtteranceProgressListener() {
-                    override fun onStart(utteranceId: String?) = Unit
+                    override fun onStart(utteranceId: String?) {
+                        hablando = true
+                    }
 
                     override fun onDone(utteranceId: String?) {
+                        hablando = false
+
                         if (conversacionContinua) {
                             runOnUiThread {
                                 binding.root.postDelayed({
