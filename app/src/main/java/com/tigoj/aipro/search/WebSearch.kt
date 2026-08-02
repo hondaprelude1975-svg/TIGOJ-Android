@@ -50,6 +50,20 @@ object WebSearch {
                     )
                 }
             }
+            .filter {
+                val u = it.url.lowercase()
+
+                u.contains("wikipedia.org") ||
+                u.contains("atptour.com") ||
+                u.contains("wtatennis.com") ||
+                u.contains("itftennis.com") ||
+                u.contains("reuters.com") ||
+                u.contains("bbc.com") ||
+                u.contains("elpais.com") ||
+                u.contains(".gov") ||
+                u.contains(".edu") ||
+                u.contains(".org")
+            }
             .take(limit)
     }
 
