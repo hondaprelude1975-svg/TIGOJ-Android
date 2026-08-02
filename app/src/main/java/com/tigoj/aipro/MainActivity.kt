@@ -20,6 +20,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.tigoj.aipro.databinding.ActivityMainBinding
 import com.tigoj.aipro.search.WebSearch
+import com.tigoj.aipro.agents.ResearchAgent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -209,37 +210,128 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     private fun buscarInternetGratis(consulta: String) {
         binding.send.isEnabled = false
-        binding.status.text = "● Buscando en Internet…"
+        binding.status.text = "● Investigando varias fuentes…"
 
         lifecycleScope.launch {
-            val resultados = withContext(Dispatchers.IO) {
+            val resultadoInvestigacion = withContext(Dispatchers.IO) {
                 try {
-                    WebSearch.search(consulta, limit = 5)
+                    val informe = ResearchAgent.investigate(
+                        query = consulta,
+                        maxSources = 3
+                    )
+
+                    if (
+                        informe.sources.isEmpty() ||
+                        informe.summarySource.isBlank()
+                    ) {
+                        null
+                    } else {
+                        val promptInvestigacion = """
+                            Eres TIGOJ AI Pro, asistente personal de Jesús.
+
+                            Debes responder en español usando únicamente la
+                            información de las fuentes que aparecen abajo.
+
+                            CONSULTA:
+                            $consulta
+
+                            INFORMACIÓN RECOPILADA:
+                            ${informe.summarySource.take(10000)}
+
+                            INSTRUCCIONES:
+                            - Redacta una respuesta clara y útil.
+                            - Compara la información cuando haya varias fuentes.
+                            - No inventes datos.
+                            - Si las fuentes no permiten confirmar algo, dilo.
+                            - No menciones que eres Gemma, Google ni DeepMind.
+                            - No copies páginas completas.
+                            - Resume en un máximo de 500 palabras.
+                        """.trimIndent()
+
+                        val body = JSONObject().apply {
+                            put("model", "default")
+                            put("stream", false)
+                            put("temperature", 0.3)
+                            put("max_tokens", 900)
+
+                            put("messages", JSONArray().apply {
+                                put(JSONObject().apply {
+                                    put("role", "system")
+                                    put(
+                                        "content",
+                                        "Eres TIGOJ AI Pro. Analizas fuentes web y respondes con precisión, claridad y honestidad."
+                                    )
+                                })
+
+                                put(JSONObject().apply {
+                                    put("role", "user")
+                                    put("content", promptInvestigacion)
+                                })
+                            })
+                        }
+
+                        val conexion = URL(
+                            "$apiBase/v1/chat/completions"
+                        ).openConnection() as HttpURLConnection
+
+                        conexion.requestMethod = "POST"
+                        conexion.setRequestProperty(
+                            "Content-Type",
+                            "application/json"
+                        )
+                        conexion.doOutput = true
+                        conexion.connectTimeout = 15000
+                        conexion.readTimeout = 180000
+
+                        conexion.outputStream.use {
+                            it.write(body.toString().toByteArray())
+                        }
+
+                        val textoRespuesta =
+                            (if (conexion.responseCode in 200..299) {
+                                conexion.inputStream
+                            } else {
+                                conexion.errorStream
+                            }).bufferedReader().use { it.readText() }
+
+                        if (conexion.responseCode !in 200..299) {
+                            null
+                        } else {
+                            val resumen = JSONObject(textoRespuesta)
+                                .getJSONArray("choices")
+                                .getJSONObject(0)
+                                .getJSONObject("message")
+                                .getString("content")
+                                .trim()
+
+                            val fuentes = informe.sources
+                                .take(3)
+                                .mapIndexed { index, fuente ->
+                                    "${index + 1}. ${fuente.title}\n${fuente.url}"
+                                }
+                                .joinToString("\n\n")
+
+                            Pair(resumen, fuentes)
+                        }
+                    }
                 } catch (e: Exception) {
-                    emptyList()
+                    null
                 }
             }
 
-            if (resultados.isNotEmpty()) {
-                val textoResultados = resultados
-                    .take(5)
-                    .mapIndexed { index, resultado ->
-                        "${index + 1}. ${resultado.title}\n" +
-                        "${resultado.snippet}\n" +
-                        "${resultado.url}"
-                    }
-                    .joinToString("\n\n")
+            if (resultadoInvestigacion != null) {
+                val resumen = resultadoInvestigacion.first
+                val fuentes = resultadoInvestigacion.second
 
                 appendChat(
-                    "TIGOJ: He encontrado estos resultados sobre $consulta:\n\n" +
-                    textoResultados +
-                    "\n\n"
+                    "TIGOJ: $resumen\n\n" +
+                    "Fuentes consultadas:\n$fuentes\n\n"
                 )
 
-                binding.status.text = "● Resultados encontrados"
+                binding.status.text = "● Investigación completada"
             } else {
                 binding.status.text =
-                    "● No encontré resultados. Abriendo Google…"
+                    "● No encontré información suficiente. Abriendo Google…"
 
                 val urlGoogle =
                     "https://www.google.com/search?q=" +
