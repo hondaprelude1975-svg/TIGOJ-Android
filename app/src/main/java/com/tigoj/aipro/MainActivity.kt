@@ -188,9 +188,16 @@ val nombreGuardado = getSharedPreferences("tigoj_memory", MODE_PRIVATE)
 
     private fun appendChat(text: String) {
         binding.chat.append(text)
-        hablar(text.removePrefix("\\nTIGOJ: ").trim())
+
+        val textoLimpio = text.trim()
+        if (textoLimpio.startsWith("TIGOJ:")) {
+            hablar(textoLimpio.removePrefix("TIGOJ:").trim())
+        }
+
         memory.edit().putString("chat", binding.chat.text.toString()).apply()
-        binding.scroll.post { binding.scroll.fullScroll(android.view.View.FOCUS_DOWN) }
+        binding.scroll.post {
+            binding.scroll.fullScroll(android.view.View.FOCUS_DOWN)
+        }
     }
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
