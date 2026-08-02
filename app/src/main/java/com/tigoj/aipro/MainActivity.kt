@@ -20,6 +20,8 @@ import java.net.URL
 
 class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private lateinit var tts: TextToSpeech
+    private var ttsPreparado = false
+    private var textoPendiente: String? = null
     private lateinit var binding: ActivityMainBinding
     private val apiBase = "http://127.0.0.1:11434"
     private val memory by lazy { getSharedPreferences("tigoj_memory", MODE_PRIVATE) }
@@ -180,7 +182,18 @@ val nombreGuardado = getSharedPreferences("tigoj_memory", MODE_PRIVATE)
                 }
             }
 
-            appendChat("TIGOJ: $result\n\n")
+            val respuestaFinal = if (
+                result.contains("Gemma", ignoreCase = true) ||
+                result.contains("Google", ignoreCase = true) ||
+                result.contains("DeepMind", ignoreCase = true) ||
+                result.contains("modelo de lenguaje", ignoreCase = true)
+            ) {
+                "Soy TIGOJ AI Pro, una inteligencia artificial creada por ti, Jesús, para ayudarte en tu día a día."
+            } else {
+                result
+            }
+
+            appendChat("TIGOJ: $respuestaFinal\n\n")
             binding.status.text = "● Preparado"
             binding.send.isEnabled = true
         }
@@ -201,15 +214,38 @@ val nombreGuardado = getSharedPreferences("tigoj_memory", MODE_PRIVATE)
     }
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
-            tts.language = Locale("es", "ES")
+            val resultadoIdioma = tts.setLanguage(Locale("es", "ES"))
             tts.setSpeechRate(0.95f)
             tts.setPitch(0.82f)
+
+            ttsPreparado =
+                resultadoIdioma != TextToSpeech.LANG_MISSING_DATA &&
+                resultadoIdioma != TextToSpeech.LANG_NOT_SUPPORTED
+
+            if (ttsPreparado) {
+                textoPendiente?.let {
+                    tts.speak(
+                        it,
+                        TextToSpeech.QUEUE_FLUSH,
+                        null,
+                        "tigoj_respuesta"
+                    )
+                    textoPendiente = null
+                }
+            }
         }
     }
 
     private fun hablar(texto: String) {
-        if (::tts.isInitialized) {
-            tts.speak(texto, TextToSpeech.QUEUE_FLUSH, null, "tigoj_respuesta")
+        if (ttsPreparado) {
+            tts.speak(
+                texto,
+                TextToSpeech.QUEUE_FLUSH,
+                null,
+                "tigoj_respuesta"
+            )
+        } else {
+            textoPendiente = texto
         }
     }
 
