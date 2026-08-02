@@ -9,6 +9,7 @@ import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.view.WindowManager
 import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import java.util.Locale
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.result.contract.ActivityResultContracts
@@ -30,6 +31,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private lateinit var tts: TextToSpeech
     private var ttsPreparado = false
     private var textoPendiente: String? = null
+    private var conversacionContinua = false
     private lateinit var binding: ActivityMainBinding
     private var speechRecognizer: SpeechRecognizer? = null
 
@@ -85,6 +87,20 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 iniciarEscucha()
             } else {
                 permisoMicrofono.launch(Manifest.permission.RECORD_AUDIO)
+            }
+        }
+
+        binding.continuousMode.setOnCheckedChangeListener { _, activado ->
+            conversacionContinua = activado
+
+            if (activado) {
+                binding.autoSend.isChecked = true
+                binding.status.text = "● Conversación continua activa"
+                iniciarEscucha()
+            } else {
+                speechRecognizer?.stopListening()
+                speechRecognizer?.cancel()
+                binding.status.text = "● Conversación continua detenida"
             }
         }
 
@@ -334,6 +350,31 @@ val nombreGuardado = getSharedPreferences("tigoj_memory", MODE_PRIVATE)
             tts.setSpeechRate(0.92f)
             tts.setPitch(0.95f)
 
+            tts.setOnUtteranceProgressListener(
+                object : UtteranceProgressListener() {
+                    override fun onStart(utteranceId: String?) = Unit
+
+                    override fun onDone(utteranceId: String?) {
+                        if (conversacionContinua) {
+                            runOnUiThread {
+                                binding.root.postDelayed({
+                                    if (conversacionContinua) {
+                                        iniciarEscucha()
+                                    }
+                                }, 600)
+                            }
+                        }
+                    }
+
+                    @Deprecated("Método antiguo de Android")
+                    override fun onError(utteranceId: String?) {
+                        runOnUiThread {
+                            binding.status.text = "● Error en la voz"
+                        }
+                    }
+                }
+            )
+
             listarVocesDisponibles()
 
             ttsPreparado =
@@ -375,6 +416,7 @@ val nombreGuardado = getSharedPreferences("tigoj_memory", MODE_PRIVATE)
     }
 
     override fun onDestroy() {
+        conversacionContinua = false
         speechRecognizer?.destroy()
         speechRecognizer = null
 
