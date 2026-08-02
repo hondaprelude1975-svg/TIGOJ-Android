@@ -215,8 +215,21 @@ val nombreGuardado = getSharedPreferences("tigoj_memory", MODE_PRIVATE)
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
             val resultadoIdioma = tts.setLanguage(Locale("es", "ES"))
-            tts.setSpeechRate(0.95f)
-            tts.setPitch(0.82f)
+
+            val vozEspanola = tts.voices
+                ?.filter { voz ->
+                    voz.locale.language == "es" &&
+                    !voz.isNetworkConnectionRequired
+                }
+                ?.sortedByDescending { voz -> voz.quality }
+                ?.firstOrNull()
+
+            if (vozEspanola != null) {
+                tts.voice = vozEspanola
+            }
+
+            tts.setSpeechRate(0.92f)
+            tts.setPitch(0.95f)
 
             ttsPreparado =
                 resultadoIdioma != TextToSpeech.LANG_MISSING_DATA &&
