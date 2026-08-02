@@ -326,17 +326,11 @@ INSTRUCCIONES:
                 binding.status.text = "● Investigación completada"
             } else {
                 binding.status.text =
-                    "● No encontré información suficiente. Abriendo Google…"
+                    "● No pude confirmar información suficiente"
 
-                val urlGoogle =
-                    "https://www.google.com/search?q=" +
-                    java.net.URLEncoder.encode(consulta, "UTF-8")
-
-                startActivity(
-                    Intent(
-                        Intent.ACTION_VIEW,
-                        android.net.Uri.parse(urlGoogle)
-                    )
+                appendChat(
+                    "TIGOJ: No pude encontrar fuentes suficientes y fiables sobre $consulta. " +
+                    "Prueba a concretar más la búsqueda o dime que lo abra en el navegador.\n\n"
                 )
             }
 
