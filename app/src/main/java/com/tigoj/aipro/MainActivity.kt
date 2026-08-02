@@ -227,20 +227,26 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                         null
                     } else {
                         val promptInvestigacion = """
-Eres TIGOJ AI Pro.
+CONSULTA DE JESÚS:
+$consulta
 
-Responde SIEMPRE en español, aunque las fuentes estén en inglés.
+INFORMACIÓN EXTRAÍDA DE LAS FUENTES:
+${informe.summarySource.take(10000)}
 
-Tu trabajo es analizar varias fuentes y escribir un resumen propio.
+TAREA:
+Redacta una respuesta útil y completa en español sobre la consulta.
 
-INSTRUCCIONES:
-- Nunca respondas en inglés.
-- No copies párrafos completos.
+REGLAS OBLIGATORIAS:
+- Responde directamente a la consulta.
+- Escribe exclusivamente en español.
+- No digas que has entendido las instrucciones.
+- No empieces con frases como "Okay", "Entendido" o "Comencemos".
 - Resume con tus propias palabras.
-- Si varias fuentes coinciden, unifica la información.
-- Si existen contradicciones, indícalo claramente.
-- Si no estás seguro, dilo.
-- Al final escribe únicamente las fuentes consultadas.
+- Compara las fuentes cuando aporten datos diferentes.
+- No inventes información.
+- Si un dato no puede confirmarse, indícalo claramente.
+- No incluyas enlaces ni una lista de fuentes en la respuesta; la aplicación los añadirá después.
+- Usa un máximo de 500 palabras.
 """.trimIndent()
 
                         val body = JSONObject().apply {
