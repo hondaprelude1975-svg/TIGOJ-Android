@@ -5,6 +5,9 @@ import android.view.WindowManager
 import android.speech.tts.TextToSpeech
 import java.util.Locale
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.Insets
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.tigoj.aipro.databinding.ActivityMainBinding
 import kotlinx.coroutines.Dispatchers
@@ -30,6 +33,21 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
         )
         tts = TextToSpeech(this, this)
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val bottomInset = maxOf(ime.bottom, systemBars.bottom)
+
+            binding.root.setPadding(
+                binding.root.paddingLeft,
+                binding.root.paddingTop,
+                binding.root.paddingRight,
+                bottomInset
+            )
+
+            insets
+        }
 
         memory.getString("chat", null)?.takeIf { it.isNotBlank() }?.let {
             binding.chat.text = it
