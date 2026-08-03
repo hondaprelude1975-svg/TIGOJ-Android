@@ -140,7 +140,15 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Micrófono" />
 
-<Button
+<ImageButton
+            android:id="@+id/imageButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_menu_gallery"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Seleccionar imagen" />
+
+        <Button
             android:id="@+id/send"
             android:layout_width="56dp"
             android:layout_height="wrap_content"

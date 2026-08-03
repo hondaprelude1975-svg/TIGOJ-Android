@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.net.Uri
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
@@ -24,6 +25,9 @@ import com.tigoj.aipro.agents.ResearchAgent
 import com.tigoj.aipro.memory.ResearchMemory
 import com.tigoj.aipro.memory.db.ResearchDatabase
 import com.tigoj.aipro.memory.db.ResearchEntity
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -49,6 +53,50 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             iniciarEscucha()
         } else {
             binding.status.text = "● Permiso de micrófono denegado"
+        }
+    }
+
+    private val selectorImagen = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri == null) {
+            return@registerForActivityResult
+        }
+
+        binding.status.text = "● Leyendo imagen…"
+
+        try {
+            val imagen = InputImage.fromFilePath(this, uri)
+            val lector = TextRecognition.getClient(
+                TextRecognizerOptions.DEFAULT_OPTIONS
+            )
+
+            lector.process(imagen)
+                .addOnSuccessListener { resultado ->
+                    val textoExtraido = resultado.text.trim()
+
+                    if (textoExtraido.isBlank()) {
+                        binding.status.text =
+                            "● No encontré texto en la imagen"
+                    } else {
+                        binding.input.setText(textoExtraido)
+                        binding.input.setSelection(textoExtraido.length)
+                        binding.status.text =
+                            "● Texto extraído de la imagen"
+                    }
+                }
+                .addOnFailureListener { error ->
+                    binding.status.text =
+                        "● No pude leer la imagen: " +
+                        (error.localizedMessage ?: "error desconocido")
+                }
+                .addOnCompleteListener {
+                    lector.close()
+                }
+        } catch (error: Exception) {
+            binding.status.text =
+                "● Error al abrir la imagen: " +
+                (error.localizedMessage ?: "error desconocido")
         }
     }
 
@@ -85,6 +133,10 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
         memory.getString("chat", null)?.takeIf { it.isNotBlank() }?.let {
             binding.chat.text = it
+        }
+
+        binding.imageButton.setOnClickListener {
+            selectorImagen.launch("image/*")
         }
 
         binding.mic.setOnClickListener {
