@@ -301,7 +301,7 @@ CONSULTA DE JESÚS:
 $consulta
 
 INFORMACIÓN EXTRAÍDA DE LAS FUENTES:
-${informe.summarySource.take(10000)}
+${informe.summarySource.take(1500)}
 
 TAREA:
 Redacta una respuesta útil y completa en español sobre la consulta.
