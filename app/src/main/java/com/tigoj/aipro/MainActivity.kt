@@ -79,10 +79,28 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                         binding.status.text =
                             "● No encontré texto en la imagen"
                     } else {
-                        binding.input.setText(textoExtraido)
-                        binding.input.setSelection(textoExtraido.length)
                         binding.status.text =
-                            "● Texto extraído de la imagen"
+                            "● Analizando imagen con TIGOJ…"
+
+                        val textoLimitado = textoExtraido.take(1200)
+
+                        val promptImagen = """
+                            Analiza el siguiente texto extraído de una imagen mediante OCR.
+
+                            Explica en español qué contiene.
+                            No copies todo el texto literalmente.
+                            Si es una carta, resume su finalidad y los datos importantes.
+                            Si es una factura, identifica importes, fechas y conceptos.
+                            Si es una noticia, resume los hechos principales.
+                            Si es una pantalla de una aplicación, explica qué muestra.
+                            Si hay datos que no se leen bien, indícalo.
+
+                            TEXTO EXTRAÍDO:
+                            $textoLimitado
+                        """.trimIndent()
+
+                        appendChat("Jesús: Analiza esta imagen.\n\n")
+                        askLocalModel(promptImagen)
                     }
                 }
                 .addOnFailureListener { error ->
