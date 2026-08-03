@@ -22,6 +22,8 @@ import com.tigoj.aipro.databinding.ActivityMainBinding
 import com.tigoj.aipro.search.WebSearch
 import com.tigoj.aipro.agents.ResearchAgent
 import com.tigoj.aipro.memory.ResearchMemory
+import com.tigoj.aipro.memory.db.ResearchDatabase
+import com.tigoj.aipro.memory.db.ResearchEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -52,6 +54,9 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     private val apiBase = "http://127.0.0.1:11434"
     private val memory by lazy { getSharedPreferences("tigoj_memory", MODE_PRIVATE) }
+    private val researchDao by lazy {
+        ResearchDatabase.getInstance(this).researchDao()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -255,23 +260,29 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     }
 
     private fun buscarInternetGratis(consulta: String) {
-        val memoriaGuardada = ResearchMemory.load(consulta)
-
-        if (memoriaGuardada != null) {
-            appendChat(
-                "TIGOJ: Ya había investigado esto antes.\n\n" +
-                memoriaGuardada.answer +
-                "\n\n"
-            )
-
-            binding.status.text = "● Respuesta recuperada de memoria"
-            return
-        }
-
         binding.send.isEnabled = false
-        binding.status.text = "● Investigando varias fuentes…"
+        binding.status.text = "● Consultando memoria…"
 
         lifecycleScope.launch {
+            val consultaNormalizada = consulta.lowercase().trim()
+
+            val memoriaGuardada = withContext(Dispatchers.IO) {
+                researchDao.load(consultaNormalizada)
+            }
+
+            if (memoriaGuardada != null) {
+                appendChat(
+                    "TIGOJ: Ya había investigado esto antes.\n\n" +
+                    memoriaGuardada.answer +
+                    "\n\n"
+                )
+
+                binding.status.text = "● Respuesta recuperada de memoria"
+                binding.send.isEnabled = true
+                return@launch
+            }
+
+            binding.status.text = "● Investigando varias fuentes…"
             val resultadoInvestigacion = withContext(Dispatchers.IO) {
                 try {
                     val informe = ResearchAgent.investigate(
@@ -383,10 +394,15 @@ REGLAS OBLIGATORIAS:
                 val resumen = resultadoInvestigacion.first
                 val fuentes = resultadoInvestigacion.second
 
-                ResearchMemory.save(
-                    consulta,
-                    resumen
-                )
+                withContext(Dispatchers.IO) {
+                    researchDao.save(
+                        ResearchEntity(
+                            normalizedQuery = consulta.lowercase().trim(),
+                            originalQuery = consulta,
+                            answer = resumen
+                        )
+                    )
+                }
 
                 appendChat(
                     "TIGOJ: $resumen\n\n" +
