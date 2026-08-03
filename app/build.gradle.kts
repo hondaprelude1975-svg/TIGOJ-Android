@@ -18,6 +18,9 @@ android {
     compileSdk = 35
 
     defaultConfig {
+ndk {
+    abiFilters += listOf("arm64-v8a")
+}
         applicationId = "com.tigoj.aipro"
         minSdk = 26
         targetSdk = 35
