@@ -3,7 +3,7 @@ name: Crear APK de TIGOJ
 on:
   workflow_dispatch:
   push:
-    branches: [ "main", "asistente-completo" ]
+    branches: [ "main", "asistente-completo", "memoria-y-vision" ]
 
 jobs:
   build:
