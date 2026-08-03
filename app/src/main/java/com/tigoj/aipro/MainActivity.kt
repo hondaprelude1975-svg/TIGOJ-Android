@@ -37,7 +37,16 @@ import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 
-class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
+class MainActivity
+
+{
+    companion object {
+        init {
+            System.loadLibrary("tigoj")
+        }
+    }
+
+ : AppCompatActivity(), TextToSpeech.OnInitListener {
     private lateinit var tts: TextToSpeech
     private var ttsPreparado = false
     private var textoPendiente: String? = null
@@ -792,3 +801,6 @@ val nombreGuardado = getSharedPreferences("tigoj_memory", MODE_PRIVATE)
     }
 
 }
+
+
+external fun stringFromJNI()
