@@ -5,7 +5,16 @@ plugins {
 }
 
 android {
+
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+        }
+    }
+
     namespace = "com.tigoj.aipro"
+    ndkVersion = "27.0.12077973"
+
     compileSdk = 35
 
     defaultConfig {
