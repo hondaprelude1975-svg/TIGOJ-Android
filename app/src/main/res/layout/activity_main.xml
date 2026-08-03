@@ -34,7 +34,7 @@
         android:layout_height="0dp"
         android:fillViewport="true"
         app:layout_constraintTop_toBottomOf="@id/status"
-        app:layout_constraintBottom_toTopOf="@id/voiceActions"
+        app:layout_constraintBottom_toTopOf="@id/imagePreview"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -52,6 +52,20 @@
     
     
     
+    <ImageView
+        android:id="@+id/imagePreview"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:maxHeight="180dp"
+        android:adjustViewBounds="true"
+        android:scaleType="centerInside"
+        android:visibility="gone"
+        android:contentDescription="Imagen enviada"
+        android:padding="4dp"
+        app:layout_constraintBottom_toTopOf="@id/voiceActions"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <LinearLayout
         android:id="@+id/voiceActions"
         android:layout_width="0dp"

@@ -9,6 +9,7 @@ import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.view.WindowManager
+import android.view.View
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import java.util.Locale
@@ -64,6 +65,9 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         }
 
         binding.status.text = "● Leyendo imagen…"
+
+        binding.imagePreview.setImageURI(uri)
+        binding.imagePreview.visibility = View.VISIBLE
 
         try {
             val imagen = InputImage.fromFilePath(this, uri)
