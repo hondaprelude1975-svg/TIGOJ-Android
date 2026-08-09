@@ -32,7 +32,8 @@ object WebSearch {
         for (searchUrl in searchUrls) {
             val resultados = try {
                 searchDuckDuckGo(searchUrl)
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                android.util.Log.e("TIGOJ_WEB", "Error buscando en $searchUrl", e)
                 emptyList()
             }
 
