@@ -12,6 +12,7 @@ data class ResearchReport(
 object ResearchAgent {
 
     fun investigate(query: String, maxSources: Int = 3): ResearchReport {
+
         val results = WebSearch.search(query, limit = maxSources)
 
         if (results.isEmpty()) {
@@ -24,37 +25,47 @@ object ResearchAgent {
 
         val combinedText = results
             .mapNotNull { result ->
+
+                val snippet = result.snippet.trim()
+
                 try {
                     val pageText = WebSearch.readPage(
                         url = result.url,
-                        maxCharacters = 3500
-                    )
+                        maxCharacters = 1800
+                    ).trim()
 
-                    if (pageText.isBlank()) {
+                    if (pageText.isBlank() && snippet.isBlank()) {
                         null
                     } else {
                         """
                         FUENTE: ${result.title}
                         URL: ${result.url}
-                        CONTENIDO:
-                        $pageText
+
+                        RESUMEN DEL BUSCADOR:
+                        ${if (snippet.isNotBlank()) snippet else "No disponible"}
+
+                        CONTENIDO DE LA PÁGINA:
+                        ${if (pageText.isNotBlank()) pageText else "No disponible"}
                         """.trimIndent()
                     }
+
                 } catch (_: Exception) {
-                    if (result.snippet.isBlank()) {
+
+                    if (snippet.isBlank()) {
                         null
                     } else {
                         """
                         FUENTE: ${result.title}
                         URL: ${result.url}
-                        RESUMEN:
-                        ${result.snippet}
+
+                        RESUMEN DEL BUSCADOR:
+                        $snippet
                         """.trimIndent()
                     }
                 }
             }
             .joinToString("\n\n---\n\n")
-            .take(10_000)
+            .take(7000)
 
         return ResearchReport(
             query = query,
