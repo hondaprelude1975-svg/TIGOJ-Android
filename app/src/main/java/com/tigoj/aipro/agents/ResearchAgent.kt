@@ -13,7 +13,26 @@ object ResearchAgent {
 
     fun investigate(query: String, maxSources: Int = 3): ResearchReport {
 
-        val results = WebSearch.search(query, limit = maxSources)
+        var results = WebSearch.search(query, limit = maxSources)
+
+        if (results.isEmpty()) {
+            val simplifiedQuery = query
+                .lowercase()
+                .replace(
+                    Regex(
+                        "\\b(investiga|investigar|busca|buscar|buscame|búscame|en internet|por internet|dime|quiero saber|puedes decirme|por favor|sobre|acerca de)\\b",
+                        RegexOption.IGNORE_CASE
+                    ),
+                    " "
+                )
+                .replace(Regex("[¿?¡!.,;:]"), " ")
+                .replace(Regex("\\s+"), " ")
+                .trim()
+
+            if (simplifiedQuery.isNotBlank() && simplifiedQuery != query.lowercase().trim()) {
+                results = WebSearch.search(simplifiedQuery, limit = maxSources)
+            }
+        }
 
         if (results.isEmpty()) {
             return ResearchReport(
