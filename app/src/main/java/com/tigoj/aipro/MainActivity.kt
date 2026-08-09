@@ -469,7 +469,10 @@ REGLAS OBLIGATORIAS:
                         }
                     }
                 } catch (e: Exception) {
-                    null
+                    Pair(
+                        "DIAGNÓSTICO: ${e.javaClass.simpleName}: ${e.message ?: "sin mensaje"}",
+                        "Error interno de investigación"
+                    )
                 }
             }
 
