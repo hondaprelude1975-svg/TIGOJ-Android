@@ -403,7 +403,7 @@ REGLAS OBLIGATORIAS:
 """.trimIndent()
 
                         val body = JSONObject().apply {
-                            put("model", "default")
+                            put("model", "qwen2.5:7b")
                             put("stream", false)
                             put("temperature", 0.3)
                             put("max_tokens", 900)
@@ -611,7 +611,7 @@ val nombreGuardado = getSharedPreferences("tigoj_memory", MODE_PRIVATE)
             val result = withContext(Dispatchers.IO) {
                 try {
                     val body = JSONObject().apply {
-                        put("model", "default")
+                        put("model", "qwen2.5:7b")
                         put("stream", false)
                         put("temperature", 0.7)
                         put("max_tokens", 500)
