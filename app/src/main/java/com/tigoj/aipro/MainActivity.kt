@@ -580,6 +580,54 @@ val nombreGuardado = getSharedPreferences("tigoj_memory", MODE_PRIVATE)
             return
         }
 
+        val requiereInternetAutomaticamente =
+            listOf(
+                "hoy",
+                "ahora",
+                "actual",
+                "actualmente",
+                "último",
+                "ultimo",
+                "última",
+                "ultima",
+                "últimas",
+                "ultimas",
+                "últimos",
+                "ultimos",
+                "noticias",
+                "precio actual",
+                "cotización",
+                "cotizacion",
+                "resultado",
+                "resultados",
+                "marcador",
+                "tiempo hace",
+                "qué tiempo",
+                "que tiempo",
+                "pronóstico",
+                "pronostico",
+                "quién es el actual",
+                "quien es el actual",
+                "quién ganó",
+                "quien ganó",
+                "quién ha ganado",
+                "quien ha ganado",
+                "qué pasó ayer",
+                "que paso ayer",
+                "qué está pasando",
+                "que esta pasando",
+                "esta semana",
+                "este mes",
+                "este año"
+            ).any { palabra ->
+                pregunta.contains(palabra)
+            }
+
+        if (requiereInternetAutomaticamente) {
+            buscarInternetGratis(original)
+            return
+        }
+
         if (
             pregunta == "quién eres" ||
             pregunta == "¿quién eres?" ||
