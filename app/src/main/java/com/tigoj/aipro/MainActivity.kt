@@ -681,8 +681,8 @@ val nombreGuardado = getSharedPreferences("tigoj_memory", MODE_PRIVATE)
                     c.requestMethod = "POST"
                     c.setRequestProperty("Content-Type", "application/json")
                     c.doOutput = true
-                    c.connectTimeout = 10000
-                    c.readTimeout = 120000
+                    c.connectTimeout = 30000
+                    c.readTimeout = 300000
                     c.outputStream.use { it.write(body.toString().toByteArray()) }
 
                     val responseText = (if (c.responseCode in 200..299) c.inputStream else c.errorStream)
