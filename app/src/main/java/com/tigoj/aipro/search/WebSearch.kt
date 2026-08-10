@@ -49,6 +49,8 @@ object WebSearch {
         val document = Jsoup.connect(searchUrl)
             .userAgent(USER_AGENT)
             .referrer("https://duckduckgo.com/")
+            .header("Accept-Language", "es-ES,es;q=0.9,en;q=0.7")
+            .header("Connection", "close")
             .timeout(SEARCH_TIMEOUT)
             .followRedirects(true)
             .get()
@@ -146,24 +148,37 @@ object WebSearch {
     ): String {
         if (!url.startsWith("http")) return ""
 
-        val document = Jsoup.connect(url)
-            .userAgent(USER_AGENT)
-            .referrer("https://www.google.com/")
-            .timeout(PAGE_TIMEOUT)
-            .followRedirects(true)
-            .ignoreHttpErrors(true)
-            .get()
+        return try {
+            val document = Jsoup.connect(url)
+                .userAgent(USER_AGENT)
+                .referrer("https://www.google.com/")
+                .header("Accept-Language", "es-ES,es;q=0.9,en;q=0.7")
+                .header("Connection", "close")
+                .timeout(PAGE_TIMEOUT)
+                .followRedirects(true)
+                .ignoreHttpErrors(true)
+                .ignoreContentType(true)
+                .maxBodySize(1_500_000)
+                .get()
 
-        document.select(
-            "script, style, nav, footer, header, aside, " +
-            "form, noscript, iframe, svg"
-        ).remove()
+            document.select(
+                "script, style, nav, footer, header, aside, " +
+                "form, noscript, iframe, svg"
+            ).remove()
 
-        return document.body()
-            ?.text()
-            ?.replace(Regex("\\s+"), " ")
-            ?.trim()
-            ?.take(maxCharacters)
-            .orEmpty()
+            document.body()
+                ?.text()
+                ?.replace(Regex("\\s+"), " ")
+                ?.trim()
+                ?.take(maxCharacters)
+                .orEmpty()
+
+        } catch (e: Exception) {
+            android.util.Log.w(
+                "TIGOJ_WEB",
+                "No se pudo leer $url: ${e.message}"
+            )
+            ""
+        }
     }
 }
