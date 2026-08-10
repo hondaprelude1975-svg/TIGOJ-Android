@@ -37,16 +37,16 @@ import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 
-class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
+class MainActivity
 
+{
     companion object {
         init {
             System.loadLibrary("tigoj")
         }
     }
 
-    external fun stringFromJNI()
-
+ : AppCompatActivity(), TextToSpeech.OnInitListener {
     private lateinit var tts: TextToSpeech
     private var ttsPreparado = false
     private var textoPendiente: String? = null
@@ -403,7 +403,7 @@ REGLAS OBLIGATORIAS:
 """.trimIndent()
 
                         val body = JSONObject().apply {
-                            put("model", "qwen2.5:7b")
+                            put("model", "default")
                             put("stream", false)
                             put("temperature", 0.3)
                             put("max_tokens", 900)
@@ -469,10 +469,7 @@ REGLAS OBLIGATORIAS:
                         }
                     }
                 } catch (e: Exception) {
-                    Pair(
-                        "DIAGNÓSTICO: ${e.javaClass.simpleName}: ${e.message ?: "sin mensaje"}",
-                        "Error interno de investigación"
-                    )
+                    null
                 }
             }
 
@@ -580,54 +577,6 @@ val nombreGuardado = getSharedPreferences("tigoj_memory", MODE_PRIVATE)
             return
         }
 
-        val requiereInternetAutomaticamente =
-            listOf(
-                "hoy",
-                "ahora",
-                "actual",
-                "actualmente",
-                "último",
-                "ultimo",
-                "última",
-                "ultima",
-                "últimas",
-                "ultimas",
-                "últimos",
-                "ultimos",
-                "noticias",
-                "precio actual",
-                "cotización",
-                "cotizacion",
-                "resultado",
-                "resultados",
-                "marcador",
-                "tiempo hace",
-                "qué tiempo",
-                "que tiempo",
-                "pronóstico",
-                "pronostico",
-                "quién es el actual",
-                "quien es el actual",
-                "quién ganó",
-                "quien ganó",
-                "quién ha ganado",
-                "quien ha ganado",
-                "qué pasó ayer",
-                "que paso ayer",
-                "qué está pasando",
-                "que esta pasando",
-                "esta semana",
-                "este mes",
-                "este año"
-            ).any { palabra ->
-                pregunta.contains(palabra)
-            }
-
-        if (requiereInternetAutomaticamente) {
-            buscarInternetGratis(original)
-            return
-        }
-
         if (
             pregunta == "quién eres" ||
             pregunta == "¿quién eres?" ||
@@ -659,7 +608,7 @@ val nombreGuardado = getSharedPreferences("tigoj_memory", MODE_PRIVATE)
             val result = withContext(Dispatchers.IO) {
                 try {
                     val body = JSONObject().apply {
-                        put("model", "qwen2.5:7b")
+                        put("model", "default")
                         put("stream", false)
                         put("temperature", 0.7)
                         put("max_tokens", 500)
@@ -852,3 +801,6 @@ val nombreGuardado = getSharedPreferences("tigoj_memory", MODE_PRIVATE)
     }
 
 }
+
+
+external fun stringFromJNI()

@@ -34,12 +34,14 @@
         android:layout_height="0dp"
         android:fillViewport="true"
         app:layout_constraintTop_toBottomOf="@id/status"
-        app:layout_constraintBottom_toTopOf="@id/autoSend"
+        app:layout_constraintBottom_toTopOf="@id/imagePreview"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
         <TextView
             android:id="@+id/chat"
+            android:textIsSelectable="true"
+            android:longClickable="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="TIGOJ: Hola Jesús. Estoy preparado.\n\n"
@@ -48,7 +50,69 @@
     </ScrollView>
 
     
-    <Switch
+    
+    
+    <ImageView
+        android:id="@+id/imagePreview"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:maxHeight="180dp"
+        android:adjustViewBounds="true"
+        android:scaleType="centerInside"
+        android:visibility="gone"
+        android:contentDescription="Imagen enviada"
+        android:padding="4dp"
+        app:layout_constraintBottom_toTopOf="@id/voiceActions"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/voiceActions"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        app:layout_constraintBottom_toTopOf="@id/continuousMode"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <Button
+            android:id="@+id/stopVoice"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="⏹ Parar" />
+
+        <Button
+            android:id="@+id/repeatVoice"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="🔁 Repetir" />
+
+        <Button
+            android:id="@+id/copyAnswer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="📋 Copiar" />
+    </LinearLayout>
+
+<Switch
+        android:id="@+id/continuousMode"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Conversación continua"
+        android:checked="false"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        app:layout_constraintBottom_toTopOf="@id/autoSend"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+<Switch
         android:id="@+id/autoSend"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -90,7 +154,15 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Micrófono" />
 
-<Button
+<ImageButton
+            android:id="@+id/imageButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_menu_gallery"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Seleccionar imagen" />
+
+        <Button
             android:id="@+id/send"
             android:layout_width="56dp"
             android:layout_height="wrap_content"

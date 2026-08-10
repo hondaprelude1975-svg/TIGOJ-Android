@@ -1,13 +1,26 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("com.google.devtools.ksp") version "1.9.24-1.0.20"
 }
 
 android {
+
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+        }
+    }
+
     namespace = "com.tigoj.aipro"
+    ndkVersion = "27.0.12077973"
+
     compileSdk = 35
 
     defaultConfig {
+ndk {
+    abiFilters += listOf("arm64-v8a")
+}
         applicationId = "com.tigoj.aipro"
         minSdk = 26
         targetSdk = 35
@@ -34,4 +47,9 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
+    implementation("org.jsoup:jsoup:1.23.1")
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    implementation("com.google.mlkit:text-recognition:16.0.1")
+    ksp("androidx.room:room-compiler:2.6.1")
 }
