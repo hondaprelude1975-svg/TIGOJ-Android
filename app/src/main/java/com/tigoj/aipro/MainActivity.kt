@@ -662,7 +662,7 @@ val nombreGuardado = getSharedPreferences("tigoj_memory", MODE_PRIVATE)
                         put("model", "qwen2.5:7b")
                         put("stream", false)
                         put("temperature", 0.7)
-                        put("max_tokens", 500)
+                        put("max_tokens", 180)
                         put("messages", JSONArray().apply {
                             put(JSONObject().apply {
                                 put("role", "system")
